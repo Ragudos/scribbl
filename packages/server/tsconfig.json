@@ -1,0 +1,34 @@
+{
+  "ts-node": {
+    "compilerOptions": {
+      "moduleResolution": "Node",
+      "module": "ESNext",
+      "esModuleInterop": true,
+    },
+    "esm": true
+  },
+  "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "esModuleInterop": true,
+    "lib": ["ESNext"],
+    "module": "ESNext",
+    /* Bundler mode */
+    "moduleResolution": "Node",
+    "forceConsistentCasingInFileNames": true,
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "allowImportingTsExtensions":true,
+    "noEmit": true
+  },
+  "include": ["**/*.ts", "**.*.js", "**/*.mjs"],
+  "exclude": ["node_modules"]
+}
