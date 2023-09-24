@@ -1,23 +1,36 @@
-import type { RoomInClient } from "@scribbl/shared-types";
+import type { MAX_PLAYERS_PER_ROOM, MAX_ROUNDS, RoomInClient } from "@scribbl/shared-types";
 import React from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { CheckIcon, CopyIcon } from "@radix-ui/react-icons";
 import { socket } from "@/lib/socket";
 
+const ReadOnlyRoomSettings = React.lazy(() => import("./read-only-room-settings"));
+const AdjustRoomSettings = React.lazy(() => import("./adjust-room-settings"));
+
 type Props = Omit<RoomInClient, "state" | "players">;
 
 const WaitingRoom: React.FC<Props> = React.memo(
-  ({ roomID, roomOwnerID }) => {
+  ({ roomID, roomOwnerID, maxPlayerAmount, maxRounds }) => {
+    const [maxPlayerAmountState, setMaxPlayerAmount] = React.useState<MAX_PLAYERS_PER_ROOM>(maxPlayerAmount);
+    const [maxRoundsState, setMaxRounds] = React.useState<MAX_ROUNDS>(maxRounds);
     const [didCopy, setDidCopy] = React.useState(false);
     const [, startTransition] = React.useTransition();
 
     const timer = React.useRef<NodeJS.Timeout | null>(null);
 
     const startGame = () => {
-
+      socket.emit("StartGame", roomID);
     };
 
+    React.useEffect(() => {
+      socket.on("EmitUpdatedMaxPlayersInRoom", setMaxPlayerAmount);
+      socket.on("EmitUpdatedMaxRoundsInRoom", setMaxRounds);
+      return () => {
+        socket.off("EmitUpdatedMaxPlayersInRoom", setMaxPlayerAmount);
+        socket.off("EmitUpdatedMaxRoundsInRoom", setMaxRounds);
+      };
+    }, []);
 
     return (
       <React.Fragment>
@@ -78,6 +91,34 @@ const WaitingRoom: React.FC<Props> = React.memo(
               </div>
             </div>
           </div>
+
+          <section>
+
+            <h4 className="font-bold mb-4">
+              Game settings:
+            </h4>
+
+            <div className="text-sm flex flex-col gap-2">
+            {roomOwnerID === socket.id ? (
+                <React.Suspense>
+                  <AdjustRoomSettings
+                    setMaxAmountOfPlayers={setMaxPlayerAmount}
+                    setMaxRounds={setMaxRounds}
+                    roomID={roomID}
+                    maxAmountOfPlayers={maxPlayerAmountState}
+                    maxRounds={maxRoundsState}
+                  />
+                </React.Suspense>
+              ) : (
+                <React.Suspense>
+                  <ReadOnlyRoomSettings
+                    maxAmountOfPlayers={maxPlayerAmountState}
+                    maxRounds={maxRoundsState}
+                  />
+                </React.Suspense>
+              )}
+            </div>
+          </section>
 
           {roomOwnerID === socket.id && (
             <div>

@@ -2,7 +2,7 @@
   "ts-node": {
     "esm": true,
     "compilerOptions": {
-      "moduleResolution": "Node",
+      "moduleResolution": "Node16",
       "module": "ESNext",
       "esModuleInterop": true,
     },
@@ -12,6 +12,7 @@
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "declaration": true,
+    "moduleResolution": "Node10",
     "strict": true,
     "esModuleInterop": true,
     "noEmit": true,
@@ -20,6 +21,6 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "index.ts"],
   "exclude": ["node_modules"]
 }

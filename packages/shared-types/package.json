@@ -2,13 +2,14 @@
   "name": "@scribbl/shared-types",
   "version": "1.0.0",
   "description": "",
-  "main": "./src/index.d.ts",
+  "main": "./index.ts",
   "type": "module",
   "keywords": [],
   "author": "",
   "license": "MIT",
-  "types": "./src/index.d.ts",
+  "types": "./index.ts",
   "devDependencies": {
+    "@types/node": "^20.6.3",
     "typescript": "^5.2.2"
   }
 }

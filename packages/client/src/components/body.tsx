@@ -8,7 +8,7 @@ import ChatBox from "./chat-box";
 
 const JoinCard = React.lazy(() => import("./join-card"));
 const WaitingRoom = React.lazy(() => import("./waiting-room"));
-
+const GameScreen = React.lazy(() => import("./game-screen"));
 const ListOfPlayers = React.lazy(() => import("./list-of-players"));
 
 export const Body: React.FC = () => {
@@ -38,6 +38,19 @@ export const Body: React.FC = () => {
                   <WaitingRoom
                     roomID={room.roomID}
                     roomOwnerID={room.roomOwnerID}
+                    maxPlayerAmount={room.maxPlayerAmount}
+                    maxRounds={room.maxRounds}
+                  />
+                </div>
+              </React.Suspense>
+            )}
+
+            {room.state === GAME_STATE.PLAYING && (
+              <React.Suspense fallback={<RotatingLoader />}>
+                <div className="w-full md:w-[75%]">
+                  <GameScreen
+                    roomID={room.roomID}
+                    players={room.players}
                   />
                 </div>
               </React.Suspense>

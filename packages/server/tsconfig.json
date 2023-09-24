@@ -1,7 +1,7 @@
 {
   "ts-node": {
     "compilerOptions": {
-      "moduleResolution": "Node",
+      "moduleResolution":"Bundler",
       "module": "ESNext",
       "esModuleInterop": true,
     },
@@ -14,7 +14,7 @@
     "lib": ["ESNext"],
     "module": "ESNext",
     /* Bundler mode */
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "forceConsistentCasingInFileNames": true,
 
     /* Linting */

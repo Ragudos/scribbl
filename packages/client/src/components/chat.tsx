@@ -27,7 +27,7 @@ const Chat: React.FC<Props> = React.memo(
     }, [messages]);
 
     return (
-      <ul className="max-w-[90vw] w-full flex flex-col gap-6 px-4 py-6 overflow-y-auto">
+      <ul className="max-w-[90vw] w-full flex flex-col gap-8 px-4 pt-8 pb-2 overflow-y-auto">
         {messages.map((m) => (
           <li
             ref={lastMsgRef}
