@@ -44,8 +44,6 @@ const GameScreen: React.FC<Props> = React.memo(
       <div className="min-h-[15rem] shadow-md shadow-black/20 rounded-lg dark:border relative">
         {gameInfo && (
           <React.Fragment>
-
-
             <header className="py-2 px-4 border-b-2 flex justify-center items-center text-center">
               <div className="flex flex-col gap-1">
                 <h3 className="font-bold">{userToDraw?.displayName}&apos;s turn</h3>

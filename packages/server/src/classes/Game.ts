@@ -1,7 +1,7 @@
 import type { ClientToServerEvents, MiddlewareAuth, PlayersInGame, Room, RunningGameInformation, ServerToClientEvents } from "@scribbl/shared-types";
-import type { Server } from "socket.io";
+import type { Server, Socket } from "socket.io";
 
-import { MAX_TIME_IN_SECONDS, GAME_STATE } from "@scribbl/shared-types/";
+import { MAX_TIME_IN_SECONDS, GAME_STATE, MAX_ROOMS } from "@scribbl/shared-types/";
 import { v4 as uuidv4 } from "uuid";
 
 import SocketInstance from "./SocketInstance";
@@ -47,7 +47,89 @@ class Game extends SocketInstance {
     this.init();
   }
 
-  private init() {
+  private handlePlayerFinishedDrawing(
+    socket: Socket<ClientToServerEvents, ServerToClientEvents>,
+    roomID: string
+  ): void {
+    const runningGame = this.runningGames.get(roomID);
+    const room = this.rooms.get(roomID);
+    if (!runningGame || !room) {
+      console.log("Memory error. A user finished drawing on a non-existent running game.");
+      return;
+    }
+
+    if (runningGame.playerToDraw.isPickingAWord) {
+      console.log("Memory error. A user finished drawing on a running game that is not picking a word.");
+      return;
+    }
+
+    const players = [...runningGame.players.values()]
+    room.amountOfPlayersDrawnInARound += 1 ;
+    runningGame.wordToGuess = null;
+    runningGame.playerToDraw.isPickingAWord = true;
+    
+    if (room.amountOfPlayersDrawnInARound >= room.players.size) {
+      console.log("Round ended");
+
+      if (runningGame.round >= room.maxRounds) {
+        console.log("Game ended.");
+        this.runningGames.delete(runningGame.roomID);
+        room.state = GAME_STATE.WAITING;
+        this.server.to(room.roomID).emit("EmitNotification", "The game has ended! Congratulations.");
+        this.server.to(room.roomID).emit("EmitRoomInformation", {
+          roomID: roomID,
+          roomOwnerID: room.roomOwnerID,
+          players: [...room.players.values()],
+          state: room.state,
+          maxPlayerAmount: room.maxPlayerAmount,
+          maxRounds: room.maxRounds
+        });
+        return;
+      }
+
+      runningGame.round += 1;
+      runningGame.playerToDraw.userID = players[0].userID;
+      room.amountOfPlayersDrawnInARound = 0;
+      this.server.to(room.roomID).emit("EmitRunningGameInformation", {
+        roomID: room.roomID,
+        round: runningGame.round,
+        players: [...runningGame.players.values()],
+        wordToGuess: runningGame.wordToGuess,
+        playerToDraw: runningGame.playerToDraw
+      });
+      this.server.to(room.roomID).emit("EmitNotification", "The round has ended! Moving on to the next cycle...");
+      return;
+    }
+
+    const keys = [...runningGame.players.keys()];
+    const indexOfPlayerToDraw = keys.indexOf(runningGame.playerToDraw.userID);
+    runningGame.playerToDraw.userID = players[indexOfPlayerToDraw + 1].userID;
+
+    console.log("--- PLAYERS ---");
+    console.log("");
+    console.log(players);
+    console.log("");
+
+    console.log("--- RUNNING GAME ---");
+    console.log("");
+    console.log(runningGame);
+    console.log("");
+
+    console.log("--- ROOM ---");
+    console.log("");
+    console.log(room);
+    console.log("");
+
+    this.server.to(room.roomID).emit("EmitRunningGameInformation", {
+      roomID: room.roomID,
+      round: runningGame.round,
+      players: [...runningGame.players.values()],
+      wordToGuess: runningGame.wordToGuess,
+      playerToDraw: runningGame.playerToDraw
+    });
+  }
+
+  private init(): void {
     this.server.on("connection", (socket) => {
       this.users.add(
         socket.userID,
@@ -121,7 +203,10 @@ class Game extends SocketInstance {
         const arrayOfWords = [] as unknown as [string, string, string];
 
         for (let idx = 0; idx < 3; ++idx) {
-          const word = getRandomWord(arrayOfWords[idx - 1] || "");
+          let word = getRandomWord(arrayOfWords[idx - 1] || "");
+          if (word === arrayOfWords[0]) {
+            word = getRandomWord(arrayOfWords[0] || "");
+          }
           arrayOfWords.push(word);
         }
 
@@ -138,12 +223,18 @@ class Game extends SocketInstance {
         }
 
         const timeClass = new Timer(MAX_TIME_IN_SECONDS);
-
+        this.server.to(roomID).emit("UpdateTimer", timeClass.time);
         const timer = setInterval(() => {
-          this.server.to(roomID).emit("UpdateTimer", timeClass.time);
           timeClass.tick();
-          console.log("ticking");
+          this.server.to(roomID).emit("UpdateTimer", timeClass.time);
+          if (timeClass.time <= 0) {
+            clearInterval(timer);
+            this.handlePlayerFinishedDrawing(socket, roomID);  
+            this.timers.dequeue();
+          }
         }, 1000);
+
+        this.timers.add(timer);
 
         runningGame.timerID = timer;
         runningGame.playerToDraw.isPickingAWord = false;
@@ -265,6 +356,10 @@ class Game extends SocketInstance {
       });
 
       socket.on("CreateRoom", () => {
+        if (this.rooms.size >= MAX_ROOMS) {
+          socket.emit("EmitError", "The server is currently full. Please try again later.");
+          return;
+        }
         const roomID = uuidv4();
 
         const players = new Map<string, MiddlewareAuth>();
@@ -283,7 +378,8 @@ class Game extends SocketInstance {
           messages: new Map(),
           state: GAME_STATE.WAITING,
           maxPlayerAmount: 8,
-          maxRounds: 2
+          maxRounds: 2,
+          amountOfPlayersDrawnInARound: 0
         } satisfies Room;
 
         this.rooms.add(roomID, room);
@@ -385,8 +481,6 @@ class Game extends SocketInstance {
             maxRounds: room.maxRounds
           });
         }
-
-        console.log(this.runningGames);
         this.users.delete(socket.userID);
       });
 

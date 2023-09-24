@@ -40,6 +40,7 @@ export const Body: React.FC = () => {
                     roomOwnerID={room.roomOwnerID}
                     maxPlayerAmount={room.maxPlayerAmount}
                     maxRounds={room.maxRounds}
+                    playersLength={room.players.length}
                   />
                 </div>
               </React.Suspense>

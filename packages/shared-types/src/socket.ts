@@ -49,7 +49,8 @@ export type Room = {
   state: GAME_STATE,
   messages: Map<string, Message>,
   maxPlayerAmount: MAX_PLAYERS_PER_ROOM,
-  maxRounds: MAX_ROUNDS
+  maxRounds: MAX_ROUNDS,
+  amountOfPlayersDrawnInARound: number
 }
 
 export type RoomInClient = Pick<Room, "maxPlayerAmount" | "roomID" | "state" | "roomOwnerID" | "maxRounds"> & {
@@ -113,6 +114,8 @@ export interface ClientToServerEvents {
   SendChosenWord: (_payload: { roomID: string, word: string }) => void;
 
   RequestRunningGameInformation: (_roomID: string) => void;
+
+
 
   StartGame: (_roomID: string) => void;
 

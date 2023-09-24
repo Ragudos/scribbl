@@ -8,10 +8,10 @@ import { socket } from "@/lib/socket";
 const ReadOnlyRoomSettings = React.lazy(() => import("./read-only-room-settings"));
 const AdjustRoomSettings = React.lazy(() => import("./adjust-room-settings"));
 
-type Props = Omit<RoomInClient, "state" | "players">;
+type Props = Omit<RoomInClient, "state" | "players"> & { playersLength: number };
 
 const WaitingRoom: React.FC<Props> = React.memo(
-  ({ roomID, roomOwnerID, maxPlayerAmount, maxRounds }) => {
+  ({ roomID, roomOwnerID, maxPlayerAmount, maxRounds, playersLength }) => {
     const [maxPlayerAmountState, setMaxPlayerAmount] = React.useState<MAX_PLAYERS_PER_ROOM>(maxPlayerAmount);
     const [maxRoundsState, setMaxRounds] = React.useState<MAX_ROUNDS>(maxRounds);
     const [didCopy, setDidCopy] = React.useState(false);
@@ -128,8 +128,9 @@ const WaitingRoom: React.FC<Props> = React.memo(
                 title="Start Game"
                 aria-label="Start Game"
                 onClick={startGame}
+                disabled={playersLength <= 1}
               >
-                Start Game
+                {playersLength <= 1 ? "There must be more than one player to start" : "Start game"}
               </Button>
             </div>
           )}

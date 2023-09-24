@@ -22,4 +22,8 @@ export class MemoryStore<T> implements MemoryStoreInterface<T> {
   getAll(): T[] {
     return [...this.data.values()];
   }
+
+  get size(): number {
+    return this.data.size;
+  }
 };
