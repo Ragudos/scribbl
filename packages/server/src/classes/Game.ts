@@ -75,6 +75,7 @@ class Game extends SocketInstance {
         console.log("Game ended.");
         this.runningGames.delete(runningGame.roomID);
         room.state = GAME_STATE.WAITING;
+        room.amountOfPlayersDrawnInARound = 0;
         this.server.to(room.roomID).emit("EmitNotification", "The game has ended! Congratulations.");
         this.server.to(room.roomID).emit("EmitRoomInformation", {
           roomID: roomID,
@@ -141,15 +142,15 @@ class Game extends SocketInstance {
       );
 
       socket.on("SendDrawingPacket", (payload) => {
-        socket.broadcast.emit("EmitReceivedDrawingPacket", payload);
+        socket.broadcast.to(payload.roomID).emit("EmitReceivedDrawingPacket", payload);
       });
 
-      socket.on("SendFillCanvas", (color) => {
-        socket.broadcast.emit("EmitReceivedFillCanvas", color);
+      socket.on("SendFillCanvas", ({ color, roomID }) => {
+        socket.broadcast.to(roomID).emit("EmitReceivedFillCanvas", color);
       });
 
-      socket.on("SendUserStoppedDrawing", () => {
-        socket.broadcast.emit("EmitUserStoppedDrawing");
+      socket.on("SendUserStoppedDrawing", (roomID) => {
+        socket.broadcast.to(roomID).emit("EmitUserStoppedDrawing");
       });
 
       socket.on("UpdateMaxPlayersInRoom", ({ roomID, userID, updatedAmount }) => {
@@ -165,7 +166,7 @@ class Game extends SocketInstance {
           return;
         };
 
-        if (room.players.size >= updatedAmount) {
+        if (room.players.size > updatedAmount) {
           socket.emit("EmitNotification", "The current amount of players in the room far exceeds the new limit. Please try kicking other players and try again.");
           socket.emit("EmitUpdatedMaxPlayersInRoom", room.maxPlayerAmount);
           return;

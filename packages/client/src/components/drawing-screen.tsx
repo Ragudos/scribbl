@@ -7,7 +7,13 @@ import { getApproximatePosition, useDrawingLogic } from "@/lib/useDrawingLogic";
 import { socket } from "@/lib/socket";
 import { DrawingToolbar } from "./drawing-toolbar";
 
-const DrawingScreen: React.FC = React.memo(() => {
+type Props = {
+	roomID: string
+}
+
+const DrawingScreen: React.FC<Props> = React.memo(({
+	roomID
+}) => {
 	const canvasRef = React.useRef<HTMLCanvasElement>(null);
 	const {
 		state,
@@ -20,10 +26,17 @@ const DrawingScreen: React.FC = React.memo(() => {
 		changeSize,
 		changeMode,
 	} = useDrawingLogic(canvasRef.current);
+	
+	const [isMounted, setIsMounted] = React.useState(false);
+
+	React.useEffect(() => {
+		setIsMounted(true);
+	}, []);
+
 	const handlePointerMove = React.useCallback(
 		(e: PointerEvent) => {
 			const canvas = canvasRef.current;
-			if (!canvas || !state.isPointerDown) {
+			if (!isMounted || !state.isPointerDown || !canvas) {
 				return;
 			}
 
@@ -46,17 +59,11 @@ const DrawingScreen: React.FC = React.memo(() => {
 					start: state.currentLine ?? direction,
 					end: direction,
 				},
+				roomID: roomID
 			});
 			drawLine(direction);
 		},
-		[
-			state.isPointerDown,
-			state.lineCap,
-			state.color,
-			state.size,
-			state.currentLine,
-			drawLine,
-		],
+		[isMounted, state.isPointerDown, state.lineCap, state.color, state.size, state.currentLine, roomID, drawLine],
 	);
 
 	const handlePointerDown = React.useCallback(
@@ -68,7 +75,10 @@ const DrawingScreen: React.FC = React.memo(() => {
 
 			if (state.mode === "fill") {
 				fill(state.color);
-				socket.emit("SendFillCanvas", state.color);
+				socket.emit("SendFillCanvas", {
+					color: state.color,
+					roomID: roomID
+				});
 				return;
 			}
 
@@ -93,24 +103,25 @@ const DrawingScreen: React.FC = React.memo(() => {
 					start: state.currentLine ?? direction,
 					end: direction,
 				},
+				roomID: roomID
 			});
 
 			drawLine(direction);
 		},
-		[changePointerState, drawLine, fill, state.color, state.currentLine, state.lineCap, state.mode, state.size],
+		[changePointerState, drawLine, fill, roomID, state.color, state.currentLine, state.lineCap, state.mode, state.size],
 	);
 
 	const handlePointerCancel = React.useCallback(() => {
 		changePointerState(false);
 
 		resetLine();
-		socket.emit("SendUserStoppedDrawing");
-	}, [changePointerState, resetLine]);
+		socket.emit("SendUserStoppedDrawing", roomID);
+	}, [changePointerState, resetLine, roomID]);
 
 	const handlePointerLeave = React.useCallback(() => {
 		resetLine();
-		socket.emit("SendUserStoppedDrawing");
-	}, [resetLine]);
+		socket.emit("SendUserStoppedDrawing", roomID);
+	}, [resetLine, roomID]);
 
 	React.useEffect(() => {
 		const canvas = canvasRef.current;

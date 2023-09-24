@@ -100,9 +100,9 @@ export type UpdateMaxRoundsInRoomPayload = {
 } & AuthorizedEmission;
 
 export interface ClientToServerEvents {
-  SendDrawingPacket: (_payload: DrawingPacketPayload) => void,
-  SendUserStoppedDrawing: () => void,
-  SendFillCanvas: (_payload: RGB) => void;
+  SendDrawingPacket: (_payload: DrawingPacketPayload & { roomID: string }) => void,
+  SendUserStoppedDrawing: (_roomID: string) => void,
+  SendFillCanvas: (_payload: { color: RGB, roomID: string }) => void;
 
   SendMessage: (_payload: MessagePayload) => void;
   RequestMessages: (_roomID: string) => void;
@@ -114,8 +114,6 @@ export interface ClientToServerEvents {
   SendChosenWord: (_payload: { roomID: string, word: string }) => void;
 
   RequestRunningGameInformation: (_roomID: string) => void;
-
-
 
   StartGame: (_roomID: string) => void;
 

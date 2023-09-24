@@ -1,14 +1,14 @@
 {
   "ts-node": {
     "compilerOptions": {
-      "moduleResolution":"Bundler",
+      "moduleResolution": "Bundler",
       "module": "ESNext",
       "esModuleInterop": true,
     },
     "esm": true
   },
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES2020",
     "useDefineForClassFields": true,
     "esModuleInterop": true,
     "lib": ["ESNext"],

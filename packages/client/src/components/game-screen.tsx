@@ -5,6 +5,9 @@ import { MAX_TIME_IN_SECONDS } from "@scribbl/shared-types/index";
 import { RotatingLoader } from "./rotating-loader";
 
 const ChooseWordsOverlay = React.lazy(() => import("./choose-words-overlay"));
+const HiddenWord = React.lazy(() => import("./hidden-word"));
+const DrawingScreen = React.lazy(() => import("./drawing-screen"));
+const NoDrawAccessCanvas = React.lazy(() => import("./no-draw-access-canvas"));
 
 type Props = {
   roomID: string,
@@ -49,7 +52,22 @@ const GameScreen: React.FC<Props> = React.memo(
                 <h3 className="font-bold">{userToDraw?.displayName}&apos;s turn</h3>
 
                 <div className="flex flex-col gap-1">
-                  <div className="text-sm">{gameInfo.wordToGuess ?? "???"}</div>
+                  <div className="text-sm">
+                    {userToDraw?.userID === socket.id && (
+                      <React.Fragment>
+                        {gameInfo.wordToGuess ?? "???"}
+                      </React.Fragment>
+                    )}
+
+                    {userToDraw?.userID !== socket.id && (
+                      <React.Suspense>
+                        <HiddenWord
+                          time={time}
+                          word={gameInfo.wordToGuess ?? "???"}
+                        />
+                      </React.Suspense>
+                    )}
+                  </div>
                   <time className="text-xs" dateTime={time + "seconds"}>
                     {time} s
                   </time>
@@ -64,6 +82,26 @@ const GameScreen: React.FC<Props> = React.memo(
                   userToDraw={userToDraw}
                 />
               </React.Suspense>
+            )}
+
+            {gameInfo.wordToGuess !== null && (
+              <React.Fragment>
+                {gameInfo.playerToDraw.userID === socket.id && (
+                  <React.Suspense fallback={<div className="w-full h-full min-h-[15rem] grid place-items-center"><RotatingLoader /></div>}>
+                    <DrawingScreen
+                      roomID={gameInfo.roomID}
+                    />
+                  </React.Suspense>
+                )}
+
+                {gameInfo.playerToDraw.userID !== socket.id && (
+                  <React.Suspense fallback={<div className="w-full h-full min-h-[15rem] grid place-items-center"><RotatingLoader /></div>}>
+                    <NoDrawAccessCanvas
+
+                    />
+                  </React.Suspense>
+                )}
+              </React.Fragment>
             )}
           </React.Fragment>
         )}
