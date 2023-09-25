@@ -5,7 +5,7 @@ import type {
 	Room,
 	RunningGameInformation,
 	ServerToClientEvents,
-} from "@scribbl/shared-types";
+} from "@scribbl/shared-types/src/index";
 import type { Server, Socket } from "socket.io";
 
 import {
@@ -13,12 +13,12 @@ import {
 	GAME_STATE,
 	MAX_ROOMS,
 	POINTS,
-} from "@scribbl/shared-types/";
+} from "@scribbl/shared-types/src/index";
 import { v4 as uuidv4 } from "uuid";
 
 import SocketInstance from "./SocketInstance";
-import { MemoryStore } from "@/store/MemoryStore";
-import Timer from "@/store/Timer";
+import { MemoryStore } from "../store/MemoryStore";
+import Timer from "../store/Timer";
 
 const WORDS = [
 	"House",

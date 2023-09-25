@@ -2,7 +2,7 @@ import type {
 	ClientToServerEvents,
 	MiddlewareAuth,
 	ServerToClientEvents,
-} from "@scribbl/shared-types";
+} from "@scribbl/shared-types/src/index";
 import type { ExtendedError } from "socket.io/dist/namespace";
 import type { Server, Socket } from "socket.io";
 

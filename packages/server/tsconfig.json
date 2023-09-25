@@ -18,8 +18,10 @@
     "moduleResolution": "node10",
     "resolveJsonModule": true,
     "incremental": true,
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@scribbl/shared-types": ["../shared-types/*"]
     }
   },
   "include": ["**/*.ts", "**.*.js", "**/*.mjs", "eslintrc.cjs"],

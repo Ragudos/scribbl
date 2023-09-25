@@ -13,6 +13,9 @@ const config: RollupOptions = {
 		dir: "dist",
 		format: "module",
 	},
+	external: [
+		"@scribbl/shared-types/"
+	],
 	plugins: [
 		typescript({
 			isolatedModules: false,

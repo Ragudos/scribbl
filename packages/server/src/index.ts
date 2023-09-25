@@ -1,7 +1,7 @@
 import type {
 	ClientToServerEvents,
 	ServerToClientEvents,
-} from "@scribbl/shared-types";
+} from "@scribbl/shared-types/src/index";
 import { config } from "dotenv";
 
 import express from "express";
