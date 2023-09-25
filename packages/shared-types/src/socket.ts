@@ -9,14 +9,16 @@ export interface MemoryStoreInterface<T> {
   getAll(): T[]
 }
 
-export type PlayersInGame =
-| {
+interface Timer {
+  time: number,
+  tick(): void;
+}
+
+export type PlayersInGame = {
   points: number;
   userID: string;
+  displayName: string;
   didGuessCorrectly: boolean;
-} | {
-  points: number;
-  userID: string;
 }
 
 export type RunningGameInformationInClient = {
@@ -39,7 +41,8 @@ export type RunningGameInformation = {
     isPickingAWord: boolean,
     userID: string
   };
-  timerID: NodeJS.Timeout | null;
+  timerID: string | null;
+  time: Timer | null
 }
 
 export type Room = {
@@ -62,6 +65,13 @@ export type Message = {
   user: MiddlewareAuth,
   roomID: string,
   content: string,
+  isSystemMessage: false
+} | {
+  messageID: string,
+  user: null,
+  roomID: string,
+  content: string,
+  isSystemMessage: true
 }
 
 export type MiddlewareAuth = {
@@ -101,6 +111,11 @@ export type UpdateMaxRoundsInRoomPayload = {
 
 export interface ClientToServerEvents {
   SendDrawingPacket: (_payload: DrawingPacketPayload & { roomID: string }) => void,
+
+  SendEraseCanvas: (_roomID: string) => void;
+
+  SendUserNotErasing: (_roomID: string) => void;
+
   SendUserStoppedDrawing: (_roomID: string) => void,
   SendFillCanvas: (_payload: { color: RGB, roomID: string }) => void;
 
@@ -126,11 +141,14 @@ export interface ServerToClientEvents {
   EmitUserStoppedDrawing: () => void;
   EmitReceivedFillCanvas: (_payload: RGB) => void;
 
+  EmitUserErasingCanvas: () => void;
+  EmitUserStoppedErasingCanvas: () => void;
+
   EmitRoomInformation: (_payload: RoomInClient) => void;
 
   EmitNotification: (_message: string) => void;
 
-  EmitMessages: (_messages: Pick<Message, "content" | "user" | "messageID">[]) => void;
+  EmitMessages: (_messages: Pick<Message, "content" | "user" | "messageID" | "isSystemMessage">[]) => void;
 
   EmitWordsToDraw: (_arrayOfWords: [string, string, string]) => void;
 
@@ -140,6 +158,7 @@ export interface ServerToClientEvents {
   EmitRunningGameInformation: (_payload: RunningGameInformationInClient) => void;
 
   UpdateTimer: (_time: number) => void;
+  UpdateChooseWordTimer: (_time: number) => void;
 
   EmitError: (_errorMessage: string) => void;
 }

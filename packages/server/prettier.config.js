@@ -9,5 +9,4 @@ const config = {
   tabWidth: 2,
   useTabs: true
 };
-
-module.exports = config;
+export default config;

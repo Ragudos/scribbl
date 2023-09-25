@@ -1,4 +1,7 @@
-import type { ClientToServerEvents, ServerToClientEvents } from "@scribbl/shared-types";
+import type {
+	ClientToServerEvents,
+	ServerToClientEvents,
+} from "@scribbl/shared-types";
 import { config } from "dotenv";
 
 import express from "express";
@@ -15,14 +18,15 @@ const app = express();
 const httpServer = createServer(app);
 
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
-  cors: {
-    origin: process.env.CORS_ORIGIN ?? `http://localhost:${process.env.CLIENT_PORT}`,
-    methods: ["GET", "POST"],
-  },
-  cleanupEmptyChildNamespaces: true,
+	cors: {
+		origin:
+			process.env.CORS_ORIGIN ?? `http://localhost:${process.env.CLIENT_PORT}`,
+		methods: ["GET", "POST"],
+	},
+	cleanupEmptyChildNamespaces: true,
 });
 
 new Game(io);
 httpServer.listen(PORT, () => {
-  console.log("server running at *:" + PORT);
+	console.log("server running at *:" + PORT);
 });

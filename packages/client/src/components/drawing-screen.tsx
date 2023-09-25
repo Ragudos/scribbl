@@ -8,12 +8,10 @@ import { socket } from "@/lib/socket";
 import { DrawingToolbar } from "./drawing-toolbar";
 
 type Props = {
-	roomID: string
-}
+	roomID: string;
+};
 
-const DrawingScreen: React.FC<Props> = React.memo(({
-	roomID
-}) => {
+const DrawingScreen: React.FC<Props> = React.memo(({ roomID }) => {
 	const canvasRef = React.useRef<HTMLCanvasElement>(null);
 	const {
 		state,
@@ -26,17 +24,26 @@ const DrawingScreen: React.FC<Props> = React.memo(({
 		changeSize,
 		changeMode,
 	} = useDrawingLogic(canvasRef.current);
-	
+
 	const [isMounted, setIsMounted] = React.useState(false);
 
 	React.useEffect(() => {
 		setIsMounted(true);
 	}, []);
 
+	React.useEffect(() => {
+		if (roomID && state.mode === "erase") {
+			socket.emit("SendEraseCanvas", roomID);
+		} else {
+			socket.emit("SendUserNotErasing", roomID);
+		}
+	}, [roomID, state.mode]);
+
 	const handlePointerMove = React.useCallback(
 		(e: PointerEvent) => {
 			const canvas = canvasRef.current;
-			if (!isMounted || !state.isPointerDown || !canvas) {
+
+			if (!state.isPointerDown || !canvas) {
 				return;
 			}
 
@@ -59,16 +66,28 @@ const DrawingScreen: React.FC<Props> = React.memo(({
 					start: state.currentLine ?? direction,
 					end: direction,
 				},
-				roomID: roomID
+				roomID: roomID,
 			});
 			drawLine(direction);
 		},
-		[isMounted, state.isPointerDown, state.lineCap, state.color, state.size, state.currentLine, roomID, drawLine],
+		[
+			state.isPointerDown,
+			state.lineCap,
+			state.color,
+			state.size,
+			state.currentLine,
+			roomID,
+			drawLine,
+		],
 	);
 
 	const handlePointerDown = React.useCallback(
 		(e: PointerEvent) => {
 			const canvas = canvasRef.current;
+			if (!isMounted) {
+				return;
+			}
+
 			if (!canvas) {
 				return;
 			}
@@ -77,7 +96,7 @@ const DrawingScreen: React.FC<Props> = React.memo(({
 				fill(state.color);
 				socket.emit("SendFillCanvas", {
 					color: state.color,
-					roomID: roomID
+					roomID: roomID,
 				});
 				return;
 			}
@@ -103,12 +122,23 @@ const DrawingScreen: React.FC<Props> = React.memo(({
 					start: state.currentLine ?? direction,
 					end: direction,
 				},
-				roomID: roomID
+				roomID: roomID,
 			});
 
 			drawLine(direction);
 		},
-		[changePointerState, drawLine, fill, roomID, state.color, state.currentLine, state.lineCap, state.mode, state.size],
+		[
+			changePointerState,
+			drawLine,
+			fill,
+			isMounted,
+			roomID,
+			state.color,
+			state.currentLine,
+			state.lineCap,
+			state.mode,
+			state.size,
+		],
 	);
 
 	const handlePointerCancel = React.useCallback(() => {
@@ -133,11 +163,15 @@ const DrawingScreen: React.FC<Props> = React.memo(({
 		canvas.addEventListener("pointermove", handlePointerMove);
 		canvas.addEventListener("pointerleave", handlePointerLeave);
 		window.addEventListener("pointerup", handlePointerCancel);
+		window.addEventListener("pointercancel", handlePointerCancel);
+		canvas.addEventListener("pointerout", handlePointerLeave);
 		return () => {
 			canvas.removeEventListener("pointerdown", handlePointerDown);
 			canvas.removeEventListener("pointermove", handlePointerMove);
 			canvas.addEventListener("pointerleave", handlePointerLeave);
 			window.removeEventListener("pointerup", handlePointerCancel);
+			window.removeEventListener("pointercancel", handlePointerCancel);
+			canvas.removeEventListener("pointerout", handlePointerLeave);
 		};
 	}, [
 		handlePointerDown,

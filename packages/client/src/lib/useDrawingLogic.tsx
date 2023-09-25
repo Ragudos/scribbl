@@ -21,17 +21,24 @@ export const useDrawingLogic = (canvas: HTMLCanvasElement | null) => {
 
 	const fill = React.useCallback(
 		(color: RGB | string) => {
-			if (
-				!ctx ||
-				!canvas
-			) {
+			if (!ctx || !canvas) {
 				return;
 			}
 
-			ctx.fillStyle = typeof color === "string" ? color : `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+			if (
+				state.mode !== "erase" &&
+				ctx.globalCompositeOperation === "destination-out"
+			) {
+				ctx.globalCompositeOperation = "source-over";
+			}
+
+			ctx.fillStyle =
+				typeof color === "string"
+					? color
+					: `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
 			ctx.fillRect(0, 0, canvas.width, canvas.height);
 		},
-		[canvas, ctx]
+		[canvas, ctx, state.mode],
 	);
 
 	const drawLine = React.useCallback(
@@ -43,6 +50,13 @@ export const useDrawingLogic = (canvas: HTMLCanvasElement | null) => {
 		) => {
 			if (!ctx) {
 				return;
+			}
+
+			if (
+				state.mode !== "erase" &&
+				ctx.globalCompositeOperation === "destination-out"
+			) {
+				ctx.globalCompositeOperation = "source-over";
 			}
 
 			ctx.beginPath();
@@ -77,7 +91,14 @@ export const useDrawingLogic = (canvas: HTMLCanvasElement | null) => {
 
 			ctx.stroke();
 		},
-		[ctx, state.color, state.currentLine, state.lineCap, state.size],
+		[
+			ctx,
+			state.color,
+			state.currentLine,
+			state.lineCap,
+			state.mode,
+			state.size,
+		],
 	);
 
 	const resetLine = React.useCallback(() => {
@@ -88,10 +109,18 @@ export const useDrawingLogic = (canvas: HTMLCanvasElement | null) => {
 		(mode: DrawMode) => {
 			dispatch({
 				type: "change-mode",
-				payload: mode
+				payload: mode,
 			});
+
+			if (ctx) {
+				if (mode === "erase") {
+					ctx.globalCompositeOperation = "destination-out";
+				} else {
+					ctx.globalCompositeOperation = "source-over";
+				}
+			}
 		},
-		[]
+		[ctx],
 	);
 
 	const changeColor = React.useCallback((color: RGB) => {

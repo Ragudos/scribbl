@@ -5,27 +5,20 @@ import { Body } from "./components/body";
 import { socket } from "./lib/socket";
 
 const App: React.FC = () => {
+	const handleConnectError = React.useCallback((error: Error | string) => {
+		if (error instanceof Error) {
+			toast.error(error.message);
+		} else {
+			toast.error(error);
+		}
+		if (socket.connected) {
+			socket.disconnect();
+		}
+	}, []);
 
-	const handleConnectError = React.useCallback(
-		(error: Error | string) => {
-			if (error instanceof Error) {
-				toast.error(error.message);
-			} else {
-				toast.error(error);
-			}
-			if (socket.connected) {
-				socket.disconnect();
-			}
-		},
-		[]
-	);
-
-	const handleNotification = React.useCallback(
-		(message: string) => {
-			toast(message);
-		},
-		[]
-	);
+	const handleNotification = React.useCallback((message: string) => {
+		toast(message);
+	}, []);
 
 	React.useEffect(() => {
 		socket.on("connect_error", handleConnectError);
@@ -41,7 +34,7 @@ const App: React.FC = () => {
 	return (
 		<React.Fragment>
 			<Toaster position="top-right" toastOptions={{ duration: 5000 }} />
-			<div className="container grid place-items-center min-h-screen">
+			<div className="py-12 container grid place-items-center min-h-screen">
 				<Body />
 			</div>
 		</React.Fragment>

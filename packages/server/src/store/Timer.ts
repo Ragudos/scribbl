@@ -1,13 +1,13 @@
 class Timer {
-  public time: number;
-  
-  constructor(totalTime: number) {
-    this.time = totalTime;
-  }
+	public time: number;
 
-  tick() {
-    this.time--;
-  }
+	constructor(totalTime: number) {
+		this.time = totalTime;
+	}
+
+	tick() {
+		this.time--;
+	}
 }
 
 export default Timer;

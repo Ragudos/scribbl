@@ -11,15 +11,17 @@ const config: RollupOptions = {
 	input: "src/index.ts",
 	output: {
 		dir: "dist",
-		format: "module"
+		format: "module",
 	},
 	plugins: [
-		typescript(),
+		typescript({
+			isolatedModules: false,
+		}),
 		babel({ babelHelpers: "bundled" }),
 		terser(),
 		nodeResolve(),
 		commonjs(),
-		json()
-	]
+		json(),
+	],
 };
 export default config;

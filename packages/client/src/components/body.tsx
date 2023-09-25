@@ -1,6 +1,6 @@
 import type { RoomInClient } from "@scribbl/shared-types";
 import React from "react";
-import { GAME_STATE } from "@scribbl/shared-types/src/enums";
+import { GAME_STATE } from "@scribbl/shared-types";
 
 import { RotatingLoader } from "./rotating-loader";
 import { socket } from "@/lib/socket";
@@ -12,67 +12,74 @@ const GameScreen = React.lazy(() => import("./game-screen"));
 const ListOfPlayers = React.lazy(() => import("./list-of-players"));
 
 export const Body: React.FC = () => {
-  const [room, setRoom] = React.useState<RoomInClient>();
+	const [room, setRoom] = React.useState<RoomInClient>();
 
-  React.useEffect(() => {
-    socket.on("EmitRoomInformation", setRoom);
-    return () => {
-      socket.off("EmitRoomInformation", setRoom);
-    };
-  }, []);
+	React.useEffect(() => {
+		socket.on("EmitRoomInformation", setRoom);
+		return () => {
+			socket.off("EmitRoomInformation", setRoom);
+		};
+	}, []);
 
-  return (
-    <React.Fragment>
-      {!room && (
-        <React.Suspense fallback={<RotatingLoader />}>
-          <JoinCard />
-        </React.Suspense>
-      )}
+	return (
+		<React.Fragment>
+			{!room && (
+				<React.Suspense fallback={<RotatingLoader />}>
+					<JoinCard />
+				</React.Suspense>
+			)}
 
-      {room && (
-        <div className="w-full flex flex-col gap-8">
-          <div className="w-full flex flex-wrap md:flex-nowrap gap-8">
-            {room.state === GAME_STATE.WAITING && (
-              <React.Suspense fallback={<RotatingLoader />}>
-                <div className="w-full md:w-[75%]">
-                  <WaitingRoom
-                    roomID={room.roomID}
-                    roomOwnerID={room.roomOwnerID}
-                    maxPlayerAmount={room.maxPlayerAmount}
-                    maxRounds={room.maxRounds}
-                    playersLength={room.players.length}
-                  />
-                </div>
-              </React.Suspense>
-            )}
+			{room && (
+				<div className="w-full flex flex-col gap-8">
+					<div className="w-full flex flex-wrap md:flex-nowrap gap-8">
+						{room.state === GAME_STATE.WAITING && (
+							<React.Suspense
+								fallback={
+									<div className="h-full min-h-[15rem] grid place-items-center">
+										<RotatingLoader />
+									</div>
+								}
+							>
+								<div className="w-full md:w-[75%]">
+									<WaitingRoom
+										roomID={room.roomID}
+										roomOwnerID={room.roomOwnerID}
+										maxPlayerAmount={room.maxPlayerAmount}
+										maxRounds={room.maxRounds}
+										playersLength={room.players.length}
+									/>
+								</div>
+							</React.Suspense>
+						)}
 
-            {room.state === GAME_STATE.PLAYING && (
-              <React.Suspense fallback={<RotatingLoader />}>
-                <div className="w-full md:w-[75%]">
-                  <GameScreen
-                    roomID={room.roomID}
-                    players={room.players}
-                  />
-                </div>
-              </React.Suspense>
-            )}
+						{room.state === GAME_STATE.PLAYING && (
+							<React.Suspense
+								fallback={
+									<div className="h-full min-h-[15rem] grid place-items-center">
+										<RotatingLoader />
+									</div>
+								}
+							>
+								<div className="w-full md:w-[75%]">
+									<GameScreen roomID={room.roomID} players={room.players} />
+								</div>
+							</React.Suspense>
+						)}
 
-            <React.Suspense>
-              <div className="w-full md:w-[25%]">
-                <ListOfPlayers
-                  roomOwnerID={room.roomOwnerID}
-                  players={room.players}
-                />
-              </div>
-            </React.Suspense>
-          </div>
-          <React.Suspense>
-            <ChatBox
-              roomID={room.roomID}
-            />
-          </React.Suspense>
-        </div>
-      )}
-    </React.Fragment>
-  );
+						<React.Suspense>
+							<div className="w-full md:w-[25%]">
+								<ListOfPlayers
+									roomOwnerID={room.roomOwnerID}
+									players={room.players}
+								/>
+							</div>
+						</React.Suspense>
+					</div>
+					<React.Suspense>
+						<ChatBox roomID={room.roomID} />
+					</React.Suspense>
+				</div>
+			)}
+		</React.Fragment>
+	);
 };

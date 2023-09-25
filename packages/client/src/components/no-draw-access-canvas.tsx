@@ -8,9 +8,8 @@ import DrawingCanvas from "./canvas";
 
 const NoDrawAccessCanvas = React.memo(() => {
 	const canvasRef = React.useRef<HTMLCanvasElement>(null);
-	const { changeCurrentLine, resetLine, drawLine, fill } = useDrawingLogic(
-		canvasRef.current,
-	);
+	const { changeCurrentLine, resetLine, drawLine, fill, changeMode } =
+		useDrawingLogic(canvasRef.current);
 
 	const handleDrawingPacketReceived = React.useCallback(
 		({
@@ -34,16 +33,37 @@ const NoDrawAccessCanvas = React.memo(() => {
 		[changeCurrentLine, drawLine],
 	);
 
+	const handleUserErasingCanvas = React.useCallback(() => {
+		changeMode("erase");
+	}, [changeMode]);
+
+	const handleUserStoppedErasingCanvas = React.useCallback(() => {
+		changeMode("brush");
+	}, [changeMode]);
+
 	React.useEffect(() => {
 		socket.on("EmitReceivedDrawingPacket", handleDrawingPacketReceived);
 		socket.on("EmitUserStoppedDrawing", resetLine);
-    socket.on("EmitReceivedFillCanvas", fill);
+		socket.on("EmitReceivedFillCanvas", fill);
+		socket.on("EmitUserErasingCanvas", handleUserErasingCanvas);
+		socket.on("EmitUserStoppedErasingCanvas", handleUserStoppedErasingCanvas);
 		return () => {
 			socket.off("EmitReceivedDrawingPacket", handleDrawingPacketReceived);
 			socket.off("EmitUserStoppedDrawing", resetLine);
-      socket.off("EmitReceivedFillCanvas", fill);
+			socket.off("EmitReceivedFillCanvas", fill);
+			socket.off("EmitUserErasingCanvas", handleUserErasingCanvas);
+			socket.off(
+				"EmitUserStoppedErasingCanvas",
+				handleUserStoppedErasingCanvas,
+			);
 		};
-	}, [fill, handleDrawingPacketReceived, resetLine]);
+	}, [
+		fill,
+		handleDrawingPacketReceived,
+		handleUserErasingCanvas,
+		handleUserStoppedErasingCanvas,
+		resetLine,
+	]);
 
 	return (
 		<div className="bg-white shadow-lg shadow-black/20 dark:border text-black flex flex-col gap-8">

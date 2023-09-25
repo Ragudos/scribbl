@@ -1,29 +1,29 @@
 import type { MemoryStoreInterface } from "@scribbl/shared-types";
 
 export class MemoryStore<T> implements MemoryStoreInterface<T> {
-  private data: Map<string, T>;
-  
-  constructor() {
-    this.data = new Map<string, T>();
-  }
+	private data: Map<string, T>;
 
-  add(itemID: string, item: T): void {
-    this.data.set(itemID, item);
-  }
+	constructor() {
+		this.data = new Map<string, T>();
+	}
 
-  get(itemID: string): T | undefined {
-    return this.data.get(itemID);
-  }
+	add(itemID: string, item: T): void {
+		this.data.set(itemID, item);
+	}
 
-  delete(itemID: string): boolean {
-    return this.data.delete(itemID);
-  }
+	get(itemID: string): T | undefined {
+		return this.data.get(itemID);
+	}
 
-  getAll(): T[] {
-    return [...this.data.values()];
-  }
+	delete(itemID: string): boolean {
+		return this.data.delete(itemID);
+	}
 
-  get size(): number {
-    return this.data.size;
-  }
-};
+	getAll(): T[] {
+		return [...this.data.values()];
+	}
+
+	get size(): number {
+		return this.data.size;
+	}
+}

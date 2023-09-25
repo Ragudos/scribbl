@@ -2,7 +2,7 @@
   "ts-node": {
     "esm": true,
     "compilerOptions": {
-      "moduleResolution": "Node16",
+      "moduleResolution": "Node10",
       "module": "ESNext",
       "esModuleInterop": true,
     },

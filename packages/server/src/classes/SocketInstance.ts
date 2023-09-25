@@ -1,46 +1,45 @@
-import type { ClientToServerEvents, MiddlewareAuth, ServerToClientEvents } from "@scribbl/shared-types";
-import type { ExtendedError } from "node_modules/socket.io/dist/namespace";
+import type {
+	ClientToServerEvents,
+	MiddlewareAuth,
+	ServerToClientEvents,
+} from "@scribbl/shared-types";
+import type { ExtendedError } from "socket.io/dist/namespace";
 import type { Server, Socket } from "socket.io";
 
 declare module "socket.io" {
-  interface Socket extends MiddlewareAuth {}
+	interface Socket extends MiddlewareAuth {}
 }
 
 class SocketInstance {
-  public server: Server<ClientToServerEvents, ServerToClientEvents>;
+	public server: Server<ClientToServerEvents, ServerToClientEvents>;
 
-  constructor(
-    server: Server<ClientToServerEvents, ServerToClientEvents>,
-  ) {
-    this.server = server;
-  }
+	constructor(server: Server<ClientToServerEvents, ServerToClientEvents>) {
+		this.server = server;
+	}
 
-  middleware(
-    socket: Socket,
-    next: (err?: ExtendedError) => void
-  ) {
-    const auth = socket.handshake.auth as MiddlewareAuth;
+	middleware(socket: Socket, next: (err?: ExtendedError) => void) {
+		const auth = socket.handshake.auth as MiddlewareAuth;
 
-    if (!auth.displayName) {
-      next(new Error("Please provide a username."));
-      return;
-    }
+		if (!auth.displayName) {
+			next(new Error("Please provide a username."));
+			return;
+		}
 
-    if (!auth.displayImage) {
-      next(new Error("Please provide a profile picture"));
-      return;
-    }
-  
-    if (!auth.userID) {
-      socket.userID = socket.id;
-    } else {
-      socket.userID = auth.userID;
-    }
+		if (!auth.displayImage) {
+			next(new Error("Please provide a profile picture"));
+			return;
+		}
 
-    socket.displayName = auth.displayName;
-    socket.displayImage = auth.displayImage;
-    next();
-  }
+		if (!auth.userID) {
+			socket.userID = socket.id;
+		} else {
+			socket.userID = auth.userID;
+		}
+
+		socket.displayName = auth.displayName;
+		socket.displayImage = auth.displayImage;
+		next();
+	}
 }
 
 export default SocketInstance;

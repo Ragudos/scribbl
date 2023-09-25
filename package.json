@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "dev:client": "npm run dev -w @scribbl/client",
+    "build:client": "npm run build -w @scribbl/client",
     "watch:server": "npm run watch -w @scribbl/server",
     "dev:server": "npm run dev -w @scribbl/server",
+    "build:server": "flyctl deploy --config packages/server/fly.toml --dockerfile packages/server/Dockerfile",
     "format": "echo formatting client && npm run format -w @scribbl/client && echo formatting server && npm run format -w @scribbl/server"
   },
   "workspaces": [

@@ -1,7 +1,6 @@
 import React from "react";
 
-const DrawingCanvas = React.forwardRef<HTMLCanvasElement>(
-	(_, ref) => (
+const DrawingCanvas = React.forwardRef<HTMLCanvasElement>((_, ref) => (
 	<div>
 		<canvas
 			ref={ref}

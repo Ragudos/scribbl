@@ -1,3 +1,4 @@
+/* eslint-disable no-mixed-spaces-and-tabs */
 import type { RGB } from "@scribbl/shared-types";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";

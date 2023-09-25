@@ -1,4 +1,4 @@
-{
+export default {
     "root": true,
     "env": {
         "browser": true,
@@ -14,7 +14,6 @@
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
         "ecmaVersion": "latest",
-        "project": true
     },
     "plugins": [
         "prettier"
@@ -28,16 +27,17 @@
         "@typescript-eslint/explicit-module-boundary-types": "error",
         "@typescript-eslint/no-explicit-any": "error",
         "quotes": [
-            "error",
+            "warn",
             "double",
             {
                 "allowTemplateLiterals": true
             }
         ],
+        "semi": "warn",
         "@typescript-eslint/consistent-type-imports": [
             "warn",
             {
-                "prefe": "type-imports",
+                "prefer": "type-imports",
                 "fixStyle": "inline-type-imports"
             }
         ],
