@@ -114,8 +114,8 @@ importers:
   packages/server:
     dependencies:
       '@scribbl/shared-types':
-        specifier: file:../shared-types
-        version: file:packages/shared-types
+        specifier: ^1.0.0
+        version: link:../shared-types
       dotenv:
         specifier: ^16.3.1
         version: 16.3.1
@@ -5005,8 +5005,3 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
     dev: true
-
-  file:packages/shared-types:
-    resolution: {directory: packages/shared-types, type: directory}
-    name: '@scribbl/shared-types'
-    dev: false
