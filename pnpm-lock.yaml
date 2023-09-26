@@ -113,6 +113,9 @@ importers:
 
   packages/server:
     dependencies:
+      '@scribbl/shared-types':
+        specifier: file:../shared-types
+        version: file:packages/shared-types
       dotenv:
         specifier: ^16.3.1
         version: 16.3.1
@@ -147,9 +150,6 @@ importers:
       '@rollup/plugin-typescript':
         specifier: ^11.1.3
         version: 11.1.3(rollup@3.29.2)(typescript@5.2.2)
-      '@scribbl/shared-types':
-        specifier: file:../shared-types
-        version: file:packages/shared-types
       '@types/express':
         specifier: ^4.17.17
         version: 4.17.17
@@ -5009,4 +5009,4 @@ packages:
   file:packages/shared-types:
     resolution: {directory: packages/shared-types, type: directory}
     name: '@scribbl/shared-types'
-    dev: true
+    dev: false

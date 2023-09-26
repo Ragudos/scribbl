@@ -1,43 +1,38 @@
 # syntax = docker/dockerfile:1
-ARG NODE_VERSION=18.14.0
-FROM node:${NODE_VERSION}-slim as base
+FROM node:18.18.0-slim as base
 
 ENV PORT=3000
+ARG CORS_ORIGIN
+ENV CORS_ORIGIN=${CORS_ORIGIN}
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 
 LABEL fly_launch_runtime="nodejs"
 
-WORKDIR /
+COPY --link ./ ./app
 
-RUN mkdir -p packages/server
-RUN mkdir -p packages/shared-types
+WORKDIR /app
 
-COPY --link ./package.json ./
-COPY --link ./packages/server/package.json packages/server/
-COPY --link ./packages/shared-types/package.json packages/shared-types/
+FROM base AS prod-deps
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
 
-RUN npm install
+FROM base AS build
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN pnpm run -r build
 
-COPY --link ./ ./
+FROM base AS shared-types
+COPY --from=prod-deps /app/packages/shared-types/node_modules /app/packages/shared-types/node_modules
+COPY --from=build /app/packages/shared-types /app/packages/shared-types
 
-WORKDIR /packages/server/
-
-RUN npm install
-
-WORKDIR /packages/shared-types
-
-RUN npm install
-
-WORKDIR /
-
-FROM base
-
-RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y openssl && \
-    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+FROM shared-types AS server
+COPY --from=prod-deps /app/packages/server/node_modules /app/packages/server/node_modules
+COPY --from=build /app/packages/server/dist /app/packages/server/dist
+WORKDIR /app/packages/server
 
 EXPOSE 3000
 
 ENV NODE_ENV=production
 
-
-CMD ["npm", "-w", "@scribbl/server", "run", "start"]
+CMD ["pnpm", "start"]

@@ -4,6 +4,7 @@
   "description": "",
   "type": "module",
   "scripts": {
+    "install:all": "npm install && cd packages/server && npm install && cd ../shared-types && npm install && cd ../../",
     "dev:client": "npm run dev -w @scribbl/client",
     "build:client": "npm run build -w @scribbl/client",
     "watch:server": "npm run watch -w @scribbl/server",
