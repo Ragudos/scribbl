@@ -1,18 +1,15 @@
 import type {
 	ClientToServerEvents,
 	ServerToClientEvents,
-} from "@scribbl/shared-types/src/index";
+} from "./consts";
 import { config } from "dotenv";
-
 import express from "express";
 import { Server } from "socket.io";
-
 import Game from "./classes/Game";
-import { createServer } from "http";
-
+import { createServer } from "https";
 config({ path: ".env.local" });
 
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 
 const app = express();
 const httpServer = createServer(app);
@@ -27,6 +24,5 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
 });
 
 new Game(io);
-httpServer.listen(PORT, () => {
-	console.log("server running at *:" + PORT);
-});
+
+io.listen(+PORT);

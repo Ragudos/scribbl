@@ -11,25 +11,20 @@ RUN corepack enable
 
 LABEL fly_launch_runtime="nodejs"
 
-COPY --link ./ ./app
+COPY ./ ./
 
-WORKDIR /app
+WORKDIR /
 
 FROM base AS prod-deps
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --no-frozen-lockfile
 
 FROM base AS build
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-RUN pnpm run -r build
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile
+RUN pnpm run build
 
-FROM base AS shared-types
-COPY --from=prod-deps /app/packages/shared-types/node_modules /app/packages/shared-types/node_modules
-COPY --from=build /app/packages/shared-types /app/packages/shared-types
-
-FROM shared-types AS server
-COPY --from=prod-deps /app/packages/server/node_modules /app/packages/server/node_modules
-COPY --from=build /app/packages/server/dist /app/packages/server/dist
-WORKDIR /app/packages/server
+FROM base
+COPY --from=prod-deps /node_modules /node_modules
+COPY --from=build /dist /dist
 
 EXPOSE 3000
 

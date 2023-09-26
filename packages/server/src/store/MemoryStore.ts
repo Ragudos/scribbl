@@ -1,4 +1,4 @@
-import type { MemoryStoreInterface } from "@scribbl/shared-types";
+import type { MemoryStoreInterface } from "../consts";
 
 export class MemoryStore<T> implements MemoryStoreInterface<T> {
 	private data: Map<string, T>;

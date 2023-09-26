@@ -5,7 +5,7 @@ import type {
 	Room,
 	RunningGameInformation,
 	ServerToClientEvents,
-} from "@scribbl/shared-types/src/index";
+} from "../consts";
 import type { Server, Socket } from "socket.io";
 
 import {
@@ -13,8 +13,7 @@ import {
 	GAME_STATE,
 	MAX_ROOMS,
 	POINTS,
-} from "@scribbl/shared-types/src/index";
-import { v4 as uuidv4 } from "uuid";
+} from "../consts";
 
 import SocketInstance from "./SocketInstance";
 import { MemoryStore } from "../store/MemoryStore";
@@ -36,6 +35,23 @@ const getRandomWord = (prevWord: string): string => {
 	return WORDS[randomWord] === prevWord
 		? getRandomWord(prevWord)
 		: WORDS[randomWord];
+};
+
+const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+const uuidv4 = () => {
+	let id = "";
+
+	for (let idx = 0; idx < 8; ++idx) {
+		const random = Math.floor(Math.random() * (alphabet.length - 1));
+		if (Math.random() <= 0.5) {
+			id += alphabet[random].toUpperCase();
+		} else {
+			id += alphabet[random];
+		}
+	}
+
+	return id;
 };
 
 class Game extends SocketInstance {
@@ -702,23 +718,39 @@ class Game extends SocketInstance {
 						}
 
 						if (runningGame.playerToDraw.userID === socket.userID) {
+							// MEANS THE RACE WAS NOT RESET
 							if (runningGame.timerID) {
 								clearInterval(this.timers.get(runningGame.timerID));
 								this.timers.delete(runningGame.timerID);
 								runningGame.timerID = null;
 								runningGame.time = null;
+
+								const players = [...runningGame.players.values()];
+
+								for (let idx = 0; idx < players.length; ++idx) {
+									const playerInMemory = runningGame.players.get(players[idx].userID);
+									if (playerInMemory) {
+										runningGame.players.set(playerInMemory.userID, {
+											points: playerInMemory.points,
+											userID: playerInMemory.userID,
+											displayName: playerInMemory.displayName,
+											didGuessCorrectly: false,
+										});
+									}
+								}
+								const keys = [...runningGame.players.keys()];
+								const indexOfPlayerToDraw = keys.indexOf(
+									runningGame.playerToDraw.userID,
+								);
+								const idx = indexOfPlayerToDraw + 1;
+								runningGame.playerToDraw.userID =
+									players[idx > players.length - 1 ? 0 : idx].userID;
+								runningGame.playerToDraw.isPickingAWord = true;
+								runningGame.wordToGuess = null;
 							}
-							const players = [...runningGame.players.values()];
-							const keys = [...runningGame.players.keys()];
-							const indexOfPlayerToDraw = keys.indexOf(
-								runningGame.playerToDraw.userID,
-							);
-							const idx = indexOfPlayerToDraw + 1;
-							runningGame.playerToDraw.userID =
-								players[idx > players.length - 1 ? 0 : idx].userID;
-							runningGame.playerToDraw.isPickingAWord = true;
 						}
 
+												
 						runningGame.players.delete(socket.userID);
 						socket.broadcast
 							.to(room.roomID)
