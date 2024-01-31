@@ -5,7 +5,7 @@ const DrawingCanvas = React.forwardRef<HTMLCanvasElement>((_, ref) => (
 		<canvas
 			ref={ref}
 			className="w-full h-auto"
-			style={{ imageRendering: "pixelated" }}
+			style={{ imageRendering: "pixelated", touchAction: "none" }}
 			width={800}
 			height={600}
 		>
